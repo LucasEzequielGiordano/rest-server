@@ -1,5 +1,6 @@
 const { Router } = require("express");
 const { check } = require("express-validator");
+const Role = require("../models/role");
 const {
     usersGet,
     usersPut,
@@ -8,6 +9,7 @@ const {
     usersPatch,
 } = require("../controllers/user.controller");
 const { validateFiles } = require("../middlewares/validateFiles");
+const { roleValid, mailExist } = require("../helpers/validateDB");
 
 const router = Router();
 
@@ -22,7 +24,8 @@ router.post(
             "This password is invalid, must have more than 6 letters"
         ).isLength({ min: 6 }),
         check("mail", "This mail is invalid").isEmail(),
-        // check("role", "This role is invalid").isIn(["ADMIN_ROLE", "USER_ROLE"]),
+        check("mail").custom(mailExist),
+        check("role").custom(roleValid),
         validateFiles,
     ],
     usersPost

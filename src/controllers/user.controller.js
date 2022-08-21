@@ -20,11 +20,7 @@ const usersPost = async (req, res = response) => {
     const { name, mail, password, role } = req.body;
     const user = new User({ name, mail, password, role });
 
-    const emailExist = await User.findOne({ mail });
-    if (emailExist)
-        res.status(400).json({
-            msg: "This email is registered in our database",
-        });
+  
 
     // encrypt password
     const salt = bcryptjs.genSaltSync();
