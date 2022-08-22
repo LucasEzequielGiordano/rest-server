@@ -15,7 +15,15 @@ const mailExist = async (mail = "") => {
     }
 };
 
+const userByIdExist = async (id) => {
+    const userExist = await user.findOne({ id });
+    if (!userExist) {
+        throw new Error(`The id address: ${id}, exist in our database`);
+    }
+};
+
 module.exports = {
     roleValid,
     mailExist,
+    userByIdExist,
 };

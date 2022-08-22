@@ -9,7 +9,11 @@ const {
     usersPatch,
 } = require("../controllers/user.controller");
 const { validateFiles } = require("../middlewares/validateFiles");
-const { roleValid, mailExist } = require("../helpers/validateDB");
+const {
+    roleValid,
+    mailExist,
+    userByIdExist,
+} = require("../helpers/validateDB");
 
 const router = Router();
 
@@ -31,7 +35,16 @@ router.post(
     usersPost
 );
 
-router.put("/:id", usersPut);
+router.put(
+    "/:id",
+    [
+        check("id", "It isn't a valid ID").isMongoId(),
+        check("id").custom(userByIdExist),
+        check("role").custom(roleValid),
+        validateFiles,
+    ],
+    usersPut
+);
 
 router.patch("/", usersPatch);
 
