@@ -9,11 +9,13 @@ const {
     usersPatch,
 } = require("../controllers/user.controller");
 const { validateFiles } = require("../middlewares/validateFiles");
+const { validateJWT } = require("../middlewares/validateJWT");
 const {
     roleValid,
     mailExist,
     userByIdExist,
 } = require("../helpers/validateDB");
+const { isAdminRole, hasRole } = require("../middlewares/validateRole");
 
 const router = Router();
 
@@ -51,6 +53,9 @@ router.patch("/", usersPatch);
 router.delete(
     "/:id",
     [
+        validateJWT,
+        // isAdminRole,
+        hasRole('ADMIN_ROLE', 'SELLS_ROLE'),
         check("id", "It isn't a valid ID").isMongoId(),
         check("id").custom(userByIdExist),
         validateFiles,
