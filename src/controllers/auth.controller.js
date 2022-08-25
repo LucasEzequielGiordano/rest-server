@@ -1,7 +1,8 @@
-const { response } = require("express");
+const { response, json } = require("express");
 const User = require("../models/user");
 const bcryptjs = require("bcryptjs");
 const { generateJWT } = require("../helpers/generateJWT");
+const { googleVerify } = require("../helpers/googleVerify");
 
 const login = async (req, res = response) => {
     const { mail, password } = req.body;
@@ -41,6 +42,44 @@ const login = async (req, res = response) => {
     }
 };
 
+const googleSignIn = async (req, res = response) => {
+    const { id_token } = req.body;
+    try {
+        const { email, name, img } = await googleVerify(id_token);
+        let user = await User.findOne({ email });
+        if (!user) {
+            const data = {
+                name,
+                email,
+                password: ":P",
+                img,
+                google: true,
+            };
+            user = new User(data);
+            await user.save();
+        }
+
+        if (!user.state) {
+            return res.status(401).json({
+                msg: "Talk with the admin, user denied",
+            });
+        }
+
+        const token = await generateJWT(user.id);
+
+        res.json({
+            user,
+            token,
+        });
+    } catch (error) {
+        json.status(400).json({
+            ok: false,
+            msg: "Token don't verified",
+        });
+    }
+};
+
 module.exports = {
     login,
+    googleSignIn,
 };
