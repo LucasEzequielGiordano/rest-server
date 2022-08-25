@@ -1,12 +1,14 @@
 const { Router } = require("express");
 const { check } = require("express-validator");
 const {
-    createCategorie,
+    createCategory,
     getCategories,
-    getCategorie,
+    getCategory,
+    updateCategory,
+    deleteCategory,
 } = require("../controllers/categories.controller");
-const { categorieExistById } = require("../helpers/validateDB");
-const { validateJWT, validateFiles } = require("../middlewares");
+const { categoryExistById } = require("../helpers/validateDB");
+const { validateJWT, validateFiles, isAdminRole } = require("../middlewares");
 
 const router = Router();
 
@@ -15,9 +17,9 @@ router.get("/", getCategories);
 router.get(
     "/:id",
     check("id", "Doesn't Mongo's id valid").isMongoId(),
-    check("id").custom(categorieExistById),
+    check("id").custom(categoryExistById),
     validateFiles,
-    getCategorie
+    getCategory
 );
 
 router.post(
@@ -27,15 +29,30 @@ router.post(
         check("name", "The name is required").not().isEmpty(),
         validateFiles,
     ],
-    createCategorie
+    createCategory
 );
 
-router.put("/:id", (req, res) => {
-    res.json("put");
-});
+router.put(
+    "/:id",
+    [
+        validateJWT,
+        check("name", "The name is required").not().isEmpty(),
+        check("id").custom(categoryExistById),
+        validateFiles,
+    ],
+    updateCategory
+);
 
-router.delete("/:id", (req, res) => {
-    res.json("delete");
-});
+router.delete(
+    "/:id",
+    [
+        validateJWT,
+        isAdminRole,
+        check("id", "Doesn't Mongo's id valid").isMongoId(),
+        check("id").custom(categoryExistById),
+        validateFiles,
+    ],
+    deleteCategory
+);
 
 module.exports = router;
